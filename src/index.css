@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-primary: #00FFA3;
+  --color-secondary: #7000FF;
+  --color-dark-bg: #080808;
+  --color-dark-surface: #121212;
+  --color-dark-surface-hover: #1a1a1a;
+  
+  --shadow-neon-green: 0 0 20px rgba(0, 255, 163, 0.25);
+  --shadow-neon-purple: 0 0 20px rgba(112, 0, 255, 0.25);
+}
+
+/* Custom styles and utilities */
+@layer utilities {
+  .glass-card {
+    background: rgba(18, 18, 18, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.7);
+  }
+
+  .glass-card-neon {
+    background: rgba(18, 18, 18, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 255, 163, 0.25);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 255, 163, 0.05);
+  }
+
+  .glass-card-purple {
+    background: rgba(18, 18, 18, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(112, 0, 255, 0.25);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(112, 0, 255, 0.05);
+  }
+
+  .neon-text-green {
+    text-shadow: 0 0 12px rgba(0, 255, 163, 0.6);
+  }
+
+  .neon-text-purple {
+    text-shadow: 0 0 12px rgba(112, 0, 255, 0.6);
+  }
+
+  .text-silver {
+    color: #e5e5e5;
+  }
+}
+
+body {
+  background-color: #080808;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  letter-spacing: -0.01em;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #080808;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e1e1e;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00FFA3;
+}
+
+/* Custom animated gradient border */
+.animated-border {
+  position: relative;
+  background: linear-gradient(90deg, #00FFA3, #7000FF, #00FFA3);
+  background-size: 200% auto;
+  animation: border-anim 4s linear infinite;
+}
+
+@keyframes border-anim {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Tinder-style swipe cards animations */
+.swipe-card {
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+  user-select: none;
+}
+
+/* Notch price design */
+.notch-tag {
+  clip-path: polygon(0% 0%, 100% 0%, 85% 100%, 0% 100%);
+}
+.notch-tag-right {
+  clip-path: polygon(15% 0%, 100% 0%, 100% 100%, 0% 100%);
+}

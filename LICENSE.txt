@@ -1,0 +1,31 @@
+COMMERCIAL PROPRIETARY SOFTWARE LICENSE AGREEMENT
+
+Product: Social Shopperfy Multi-Vendor Social Commerce Platform
+Copyright: (c) 2026 Social Shopperfy Co-Op. All Rights Reserved.
+
+IMPORTANT - READ CAREFULLY: This Commercial Proprietary Software License Agreement ("Agreement") is a legal agreement between you (either an individual or a single entity, "Licensee") and Social Shopperfy Co-Op ("Licensor") for the Social Shopperfy software program, including any accompanying source code, documentation, assets, databases, and server components (collectively, the "Software").
+
+BY INSTALLING, COPYING, OR OTHERWISE USING THE SOFTWARE, YOU AGREE TO BE BOUND BY THE TERMS OF THIS AGREEMENT. IF YOU DO NOT AGREE TO THESE TERMS, DO NOT INSTALL, ACCESS, OR USE THE SOFTWARE.
+
+1. LICENSE GRANT & RESTRICTIONS
+The Software is licensed, not sold. Subject to the terms and conditions of this Agreement, Licensor grants Licensee a non-exclusive, non-transferable, revocable license to execute and run the Software solely for internal business operations and authorized commercial deployment within agreed parameters.
+- No Open Source Conversion: Licensee is strictly prohibited from distributing, publishing, or converting the Software under any open-source license model (including but not limited to MIT, Apache, GPL, or BSD licenses).
+- No Sublicensing: Licensee may not sublicense, rent, lease, or lend any portion of the Software or its source code to third parties.
+- Intellectual Property: All title, copyright, patents, and other intellectual property rights in and to the Software remain exclusively with Social Shopperfy Co-Op.
+
+2. CONFIDENTIALITY
+The source code, architecture, design patterns, database schemas, and AI prompts contained within the Software constitute highly valuable proprietary trade secrets of the Licensor. Licensee agrees to maintain strict confidentiality of all source files and shall not expose them to unauthorized third parties or public repositories without written authorization.
+
+3. DISCLAIMER OF WARRANTY & LIABILITY
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+4. CONSUMER PROTECTION & CROSS-BORDER COMPLIANCE WARNING
+LEGAL NOTICE: Licensee is explicitly warned that cross-border e-commerce, international escrow operations, multi-vendor payment distribution, and consumer transactions are subject to diverse national and international consumer-protection laws, tax mandates, and financial regulations (such as those in Nigeria, the United States, the United Kingdom, the European Union, the United Arab Emirates, and China). Licensee MUST obtain qualified legal counsel to customize the Terms of Service and Privacy Policy before executing real commercial payment processing with public customers.
+
+5. TERMINATION
+This Agreement is effective until terminated. Licensor may terminate this Agreement immediately without notice if Licensee fails to comply with any provision of this Agreement. Upon termination, Licensee must destroy all copies of the Software and cease all operational deployment.
+
+---
+Social Shopperfy Co-Op
+Headquarters: Lagos, Nigeria
+Contact: musajohnjonathan@gmail.com

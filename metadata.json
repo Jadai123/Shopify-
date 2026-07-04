@@ -1,0 +1,8 @@
+{
+  "name": "Social Shopperfy",
+  "description": "A high-end multi-vendor marketplace featuring dual-persona onboarding, swipe discovery feeds, direct-to-vendor WhatsApp communication, and a smart Gemini-powered AI shopping assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
