@@ -290,6 +290,74 @@ app.post('/api/orders', (req, res) => {
   });
 });
 
+// Admin update order status
+app.put('/api/admin/orders/:id/status', validateAdminAuth, (req, res) => {
+  const { status } = req.body;
+  if (!status) {
+    return res.status(400).json({ error: 'Status is required' });
+  }
+  const updated = db.updateOrderStatus(req.params.id, status);
+  if (!updated) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+  res.json(updated);
+});
+
+// Wishlist
+app.get('/api/wishlist', (req, res) => {
+  const session = getSessionFromRequest(req);
+  if (!session) {
+    return res.json([]); // Return empty list instead of crashing if not logged in
+  }
+  res.json(db.getWishlist(session.email));
+});
+
+app.post('/api/wishlist/toggle', (req, res) => {
+  const session = getSessionFromRequest(req);
+  if (!session) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const { productId } = req.body;
+  if (!productId) {
+    return res.status(400).json({ error: 'productId is required' });
+  }
+  res.json(db.toggleWishlist(session.email, productId));
+});
+
+// Price Alerts
+app.get('/api/price-alerts', (req, res) => {
+  const session = getSessionFromRequest(req);
+  if (!session) {
+    return res.json([]);
+  }
+  res.json(db.getPriceAlerts(session.email));
+});
+
+app.post('/api/price-alerts', (req, res) => {
+  const session = getSessionFromRequest(req);
+  if (!session) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const { productId, targetPrice } = req.body;
+  if (!productId || targetPrice === undefined) {
+    return res.status(400).json({ error: 'productId and targetPrice are required' });
+  }
+  const alert = db.createPriceAlert(session.email, productId, parseFloat(targetPrice));
+  res.status(201).json(alert);
+});
+
+app.delete('/api/price-alerts/:id', (req, res) => {
+  const session = getSessionFromRequest(req);
+  if (!session) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const success = db.deletePriceAlert(req.params.id);
+  if (!success) {
+    return res.status(404).json({ error: 'Price alert not found' });
+  }
+  res.json({ success: true });
+});
+
 // AI Chat tool implementation functions
 function search_products_local(args: { query?: string; category?: string; max_price?: number }) {
   let products = db.getProducts();

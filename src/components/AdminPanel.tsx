@@ -127,6 +127,24 @@ export default function AdminPanel({ products, vendors, onRefreshData }: AdminPa
       });
   };
 
+  const handleUpdateOrderStatus = (orderId: string, newStatus: string) => {
+    fetch(`/api/admin/orders/${orderId}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': adminAuthHeader
+      },
+      body: JSON.stringify({ status: newStatus })
+    })
+      .then(res => res.json())
+      .then(() => {
+        loadAdminSpecifics();
+        triggerToast(`Order status updated to ${newStatus.toUpperCase()}.`);
+        if (onRefreshData) onRefreshData();
+      })
+      .catch(err => console.error('[Error updating order status]:', err));
+  };
+
   const triggerToast = (msg: string) => {
     setActionSuccess(msg);
     setTimeout(() => setActionSuccess(''), 3000);
@@ -724,7 +742,20 @@ export default function AdminPanel({ products, vendors, onRefreshData }: AdminPa
                                   <div><strong className="text-white">Email:</strong> {o.user_email}</div>
                                   <div><strong className="text-white">Transaction Date:</strong> {new Date(o.created_at).toLocaleString()}</div>
                                   <div><strong className="text-white">Fulfillment ID:</strong> {o.id}</div>
-                                  <div><strong className="text-white">Status Code:</strong> <span className="text-emerald-400 font-mono font-bold">SETTLED_SIGNED</span></div>
+                                  <div className="mt-2 pt-1 border-t border-white/5">
+                                    <strong className="text-white block mb-1 text-[10px] uppercase font-mono tracking-wider">Fulfillment Status:</strong>
+                                    <select
+                                      value={o.status || 'pending'}
+                                      onChange={(e) => handleUpdateOrderStatus(o.id, e.target.value)}
+                                      className="bg-neutral-900 text-primary border border-white/10 rounded px-2 py-1 text-xs font-mono font-bold cursor-pointer hover:border-primary transition-all w-full max-w-[150px]"
+                                    >
+                                      <option value="pending">⏳ Pending</option>
+                                      <option value="processing">⚙️ Processing</option>
+                                      <option value="shipped">🚢 Shipped</option>
+                                      <option value="delivered">✅ Delivered</option>
+                                      <option value="cancelled">❌ Cancelled</option>
+                                    </select>
+                                  </div>
                                 </div>
                               </div>
 

@@ -54,11 +54,27 @@ export interface Order {
   product_id: string;
   amount_ngn: number;
   amount_usd: number;
-  status: 'pending' | 'completed' | 'cancelled';
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   payment_gateway: 'paystack' | 'stripe';
   created_at: string;
   referral_code_used?: string;
   discount_applied_percent?: number;
+}
+
+export interface WishlistItem {
+  id: string;
+  email: string;
+  product_id: string;
+  created_at: string;
+}
+
+export interface PriceAlert {
+  id: string;
+  email: string;
+  product_id: string;
+  target_price: number;
+  created_at: string;
+  active: boolean;
 }
 
 export interface Profile {
@@ -86,6 +102,8 @@ const INITIAL_STORE_STATE = {
   price_history: getSeededPriceHistory(freshSeededProducts),
   admin_settings: SEED_ADMIN_SETTINGS,
   orders: [] as Order[],
+  wishlists: [] as WishlistItem[],
+  price_alerts: [] as PriceAlert[],
   users: [
     {
       id: 'user-admin',
@@ -131,6 +149,8 @@ export class Database {
           this.save();
         } else {
           this.data = parsed;
+          if (!this.data.wishlists) this.data.wishlists = [];
+          if (!this.data.price_alerts) this.data.price_alerts = [];
           console.log('[DB] Database loaded successfully from:', DB_FILE, `(${this.data.products.length} products, ${this.data.profiles.length} profiles)`);
         }
       } else {
@@ -329,12 +349,84 @@ export class Database {
     const newOrder: Order = {
       ...order,
       id: `order-${Date.now()}`,
-      status: 'completed', // For our simulation, mark payments as success immediately
+      status: 'pending', // Starts in pending for rich user tracking visualization!
       created_at: new Date().toISOString()
     };
     this.data.orders.push(newOrder);
     this.save();
     return newOrder;
+  }
+
+  updateOrderStatus(orderId: string, status: Order['status']): Order | undefined {
+    const index = this.data.orders.findIndex(o => o.id === orderId);
+    if (index === -1) return undefined;
+    this.data.orders[index].status = status;
+    this.save();
+    return this.data.orders[index];
+  }
+
+  // Wishlist
+  getWishlist(email: string): string[] {
+    return (this.data.wishlists || [])
+      .filter(w => w.email.toLowerCase() === email.toLowerCase())
+      .map(w => w.product_id);
+  }
+
+  toggleWishlist(email: string, productId: string): { active: boolean } {
+    if (!this.data.wishlists) this.data.wishlists = [];
+    const index = this.data.wishlists.findIndex(
+      w => w.email.toLowerCase() === email.toLowerCase() && w.product_id === productId
+    );
+    if (index !== -1) {
+      this.data.wishlists.splice(index, 1);
+      this.save();
+      return { active: false };
+    } else {
+      this.data.wishlists.push({
+        id: `wish-${Date.now()}`,
+        email,
+        product_id: productId,
+        created_at: new Date().toISOString()
+      });
+      this.save();
+      return { active: true };
+    }
+  }
+
+  // Price Alerts
+  getPriceAlerts(email: string): PriceAlert[] {
+    return (this.data.price_alerts || [])
+      .filter(a => a.email.toLowerCase() === email.toLowerCase());
+  }
+
+  createPriceAlert(email: string, productId: string, targetPrice: number): PriceAlert {
+    if (!this.data.price_alerts) this.data.price_alerts = [];
+    const index = this.data.price_alerts.findIndex(
+      a => a.email.toLowerCase() === email.toLowerCase() && a.product_id === productId
+    );
+    const newAlert: PriceAlert = {
+      id: index !== -1 ? this.data.price_alerts[index].id : `alert-${Date.now()}`,
+      email,
+      product_id: productId,
+      target_price: targetPrice,
+      created_at: new Date().toISOString(),
+      active: true
+    };
+    if (index !== -1) {
+      this.data.price_alerts[index] = newAlert;
+    } else {
+      this.data.price_alerts.push(newAlert);
+    }
+    this.save();
+    return newAlert;
+  }
+
+  deletePriceAlert(id: string): boolean {
+    if (!this.data.price_alerts) return false;
+    const initialLen = this.data.price_alerts.length;
+    this.data.price_alerts = this.data.price_alerts.filter(a => a.id !== id);
+    this.save();
+    return this.data.price_alerts.length < initialLen;
   }
 }
 

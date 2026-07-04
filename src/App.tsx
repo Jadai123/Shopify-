@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, ShoppingBag, Grid, Shield, RefreshCw, Layers, Percent, ShieldCheck } from 'lucide-react';
+import { Sparkles, ShoppingBag, Grid, Shield, RefreshCw, Layers, Percent, ShieldCheck, Sun, Moon, ChevronLeft, ChevronRight, Check, X, Heart } from 'lucide-react';
 import { Product, Vendor, UserPersona } from './types';
 import { supabase } from './lib/supabase';
 
@@ -39,6 +39,118 @@ export default function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState<'signin' | 'signup'>('signin');
   const [pendingCheckoutProduct, setPendingCheckoutProduct] = useState<Product | null>(null);
+
+  // Theme switcher state
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    return (localStorage.getItem('shopperfy_theme') as 'dark' | 'light') || 'dark';
+  });
+
+  // Home Page Carousel state
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const carouselSlides = [
+    {
+      title: "Direct Factory Sourcing Slashes Costs by up to 50%",
+      desc: "Order directly from verified manufacturers in Nigeria, US, UK, China, and UAE.",
+      comparison: "Social Shopperfy: ₦12,500 | Alibaba: ₦18,000 (Min. Order 50) | Jumia: ₦29,000",
+      image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      title: "Consolidated Micro-Freight Clearance",
+      desc: "Community volume shipping clears custom import hurdles with prepaid low air/ocean tariffs.",
+      comparison: "Social Shopperfy Freight: ₦2,200/kg | DHL Direct Cargo: ₦14,500/kg",
+      image: "https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      title: "Automated Community Sourcing Power",
+      desc: "Server-side Gemini negotiation agents simulate volume orders to guarantee lowest tier unit pricing.",
+      comparison: "Single Unit Price: Dropped by 15% via community leverage rules",
+      image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80"
+    }
+  ];
+
+  // Auto-slide carousel
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCarouselIndex(prev => (prev + 1) % carouselSlides.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Set theme on body element
+  useEffect(() => {
+    if (theme === 'light') {
+      document.body.classList.add('light-theme');
+    } else {
+      document.body.classList.remove('light-theme');
+    }
+    localStorage.setItem('shopperfy_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
+  // Customer care WhatsApp link from Admin settings
+  const [customerCareLink, setCustomerCareLink] = useState<string>('https://wa.me/2348033334444');
+
+  useEffect(() => {
+    fetch('/api/admin/settings')
+      .then(res => {
+        if (res.ok) return res.json();
+        throw new Error('Not found');
+      })
+      .then(data => {
+        if (data && data.whatsapp_link) {
+          setCustomerCareLink(data.whatsapp_link);
+        }
+      })
+      .catch(err => console.log('Using default customer care WhatsApp:', err));
+  }, []);
+
+  // Wishlist global state & API handlers
+  const [wishlist, setWishlist] = useState<string[]>([]);
+
+  const fetchWishlist = async () => {
+    if (!currentUser) {
+      setWishlist([]);
+      return;
+    }
+    try {
+      const res = await fetch('/api/wishlist');
+      if (res.ok) {
+        const data = await res.json();
+        setWishlist(data || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch wishlist:", err);
+    }
+  };
+
+  const handleToggleWishlist = async (productId: string) => {
+    if (!currentUser) {
+      // Prompt sign in
+      setAuthTab('signin');
+      setIsAuthOpen(true);
+      return;
+    }
+    try {
+      const res = await fetch('/api/wishlist/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId })
+      });
+      if (res.ok) {
+        await fetchWishlist();
+      }
+    } catch (err) {
+      console.error("Failed to toggle wishlist:", err);
+    }
+  };
+
+  // Sync wishlist on user login or refresh trigger
+  useEffect(() => {
+    fetchWishlist();
+  }, [currentUser, refreshTrigger]);
 
   // Load auth state & session listeners on boot
   useEffect(() => {
@@ -290,6 +402,16 @@ export default function App() {
           >
             Onboard
           </button>
+
+          {/* Theme switcher toggle */}
+          <button
+            onClick={toggleTheme}
+            className="p-1.5 rounded border border-white/10 hover:border-white/20 bg-neutral-900 text-gray-400 hover:text-white transition-all cursor-pointer flex items-center justify-center"
+            title={`Switch to ${theme === 'dark' ? 'Light Theme' : 'Dark Theme'}`}
+            id="theme-switcher-toggle"
+          >
+            {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-primary" />}
+          </button>
         </div>
       </header>
 
@@ -327,6 +449,72 @@ export default function App() {
                 >
                   Browse Catalog Directory
                 </button>
+              </div>
+            </div>
+
+            {/* Interactive Image Carousel */}
+            <div className="max-w-5xl mx-auto px-4" id="home-image-carousel">
+              <div className="relative h-72 md:h-96 rounded-2xl overflow-hidden border border-white/10 bg-neutral-900 group shadow-2xl">
+                {/* Background image */}
+                <img
+                  src={carouselSlides[carouselIndex].image}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover opacity-60 transition-all duration-1000 transform scale-105"
+                  referrerPolicy="no-referrer"
+                />
+                
+                {/* Black radial gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/40 to-transparent" />
+
+                {/* Content Overlay */}
+                <div className="absolute inset-0 p-6 md:p-12 flex flex-col justify-end">
+                  <div className="max-w-2xl">
+                    <span className="inline-block px-2.5 py-1 rounded bg-primary/20 text-primary border border-primary/30 text-[10px] font-mono font-extrabold uppercase tracking-widest mb-3">
+                      CO-OP BENEFIT INDICATOR
+                    </span>
+                    <h3 className="text-xl md:text-3xl font-display font-black text-white leading-tight">
+                      {carouselSlides[carouselIndex].title}
+                    </h3>
+                    <p className="text-gray-300 text-xs md:text-sm mt-2 font-sans">
+                      {carouselSlides[carouselIndex].desc}
+                    </p>
+                    <div className="mt-4 p-3 rounded-lg bg-neutral-950/85 border border-primary/20 backdrop-blur-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                      <span className="text-[10px] font-mono text-gray-400 font-bold uppercase tracking-wider">Direct Price Comparisons:</span>
+                      <span className="text-[11px] font-mono text-primary font-black">
+                        {carouselSlides[carouselIndex].comparison}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Left/Right Slider controls */}
+                <button
+                  onClick={() => setCarouselIndex(prev => (prev - 1 + carouselSlides.length) % carouselSlides.length)}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-neutral-950/60 hover:bg-neutral-950 border border-white/5 flex items-center justify-center text-white cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+                  id="carousel-prev"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setCarouselIndex(prev => (prev + 1) % carouselSlides.length)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-neutral-950/60 hover:bg-neutral-950 border border-white/5 flex items-center justify-center text-white cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+                  id="carousel-next"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+
+                {/* Indicator Dots */}
+                <div className="absolute bottom-4 right-6 flex gap-1.5 z-20">
+                  {carouselSlides.map((_, sidx) => (
+                    <button
+                      key={sidx}
+                      onClick={() => setCarouselIndex(sidx)}
+                      className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
+                        carouselIndex === sidx ? 'bg-primary w-4' : 'bg-white/30 hover:bg-white/60'
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -368,6 +556,8 @@ export default function App() {
                 products={products}
                 vendors={vendors}
                 persona={persona}
+                wishlist={wishlist}
+                onToggleWishlist={handleToggleWishlist}
                 onSelectProduct={handleSelectProduct}
                 onStartCheckout={(p) => handleStartCheckout(p)}
               />
@@ -402,37 +592,87 @@ export default function App() {
                   );
                 })}
               </div>
-            </div>
-
-            {/* Why Us section with full copy */}
-            <div className="max-w-5xl mx-auto px-4 py-8 border-y border-white/5">
+             {/* Why Us / Comparison table section */}
+            <div className="max-w-5xl mx-auto px-4 py-12 border-y border-white/5 bg-neutral-950/20 rounded-3xl" id="coop-comparison-section">
               <div className="text-center mb-10">
-                <h3 className="font-display text-2xl font-extrabold text-white">Why Co-Op Sourcing Beats Traditional Retail Markup</h3>
-                <p className="text-xs text-gray-500 font-mono mt-1 uppercase">Eliminate intermediaries, pay manufacturing cost direct.</p>
+                <span className="text-[10px] font-mono font-black text-primary uppercase tracking-widest bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                  MARKET COMPARISON DATA SHEET
+                </span>
+                <h3 className="font-display text-3xl font-black text-white mt-4">Why Social Shopperfy Beats Alibaba & Jumia</h3>
+                <p className="text-xs text-gray-500 font-mono mt-1 uppercase">Direct Naira factory rates, consolidated custom clearance, and zero MOQs.</p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+              {/* Responsive Comparison Grid Table */}
+              <div className="overflow-x-auto rounded-xl border border-white/5 bg-neutral-950 shadow-2xl">
+                <table className="w-full text-left border-collapse text-xs font-mono">
+                  <thead>
+                    <tr className="border-b border-white/10 bg-neutral-900/50 text-gray-400">
+                      <th className="p-4 uppercase tracking-wider font-bold">Key Sourcing Feature</th>
+                      <th className="p-4 uppercase tracking-wider font-bold text-primary">⚡ Social Shopperfy</th>
+                      <th className="p-4 uppercase tracking-wider font-bold">🇨🇳 Alibaba Direct</th>
+                      <th className="p-4 uppercase tracking-wider font-bold">🛒 Jumia Nigeria</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-gray-300">
+                    <tr>
+                      <td className="p-4 font-bold text-white">Direct Unit Factory Cost</td>
+                      <td className="p-4 text-primary font-black bg-primary/5">₦12,500 (Base Sourcing)</td>
+                      <td className="p-4">₦18,000 (Bulk Only)</td>
+                      <td className="p-4">₦29,000 (Retail Markup)</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 font-bold text-white">Minimum Order Quantity</td>
+                      <td className="p-4 text-emerald-400 font-bold bg-emerald-500/5">1 Unit Allowed</td>
+                      <td className="p-4 text-red-400">50 - 100 Units Minimum</td>
+                      <td className="p-4">1 Unit Allowed</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 font-bold text-white">Local Payments & Forex</td>
+                      <td className="p-4 text-emerald-400 font-bold bg-emerald-500/5">Seamless Naira Cards / Bank Transfer</td>
+                      <td className="p-4 text-red-400">USD Cards Only / High Forex Rates</td>
+                      <td className="p-4">Naira Only (inflated list prices)</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 font-bold text-white">Customs & Shipping</td>
+                      <td className="p-4 text-emerald-400 font-bold bg-emerald-500/5">₦2,200/kg (Fully Cleared Co-Op Consolidated)</td>
+                      <td className="p-4 text-red-400">DHL high fees / Custom duties surprises</td>
+                      <td className="p-4">Local Delivery (high fulfillment markup)</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 font-bold text-white">AI Negotiations</td>
+                      <td className="p-4 text-primary font-black bg-primary/5">Gemini-backed Volume Agent Enabled</td>
+                      <td className="p-4">Manual negotiation via Chat</td>
+                      <td className="p-4 text-gray-600">None (Fixed Pricing)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Features Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
                 <div className="p-5 rounded-xl bg-neutral-900/40 border border-white/5">
-                  <div className="text-primary font-mono text-sm font-bold mb-3">01 / SMART AI AGENTS</div>
+                  <div className="text-primary font-mono text-xs font-bold mb-3 uppercase tracking-wider">01 / SMART AI AGENTS</div>
                   <h4 className="text-white font-bold text-xs mb-1">Algorithmic Sourcing & Negotiating</h4>
                   <p className="text-gray-400 text-[11px] leading-relaxed font-sans">
                     Our server-side AI model connects directly with manufacturing endpoints to simulate bulk bargaining, securing volume-tier price catalogs even for individual orders.
                   </p>
                 </div>
                 <div className="p-5 rounded-xl bg-neutral-900/40 border border-white/5">
-                  <div className="text-secondary font-mono text-sm font-bold mb-3">02 / LOCAL GATEWAY CLARITY</div>
+                  <div className="text-secondary font-mono text-xs font-bold mb-3 uppercase tracking-wider">02 / LOCAL GATEWAY CLARITY</div>
                   <h4 className="text-white font-bold text-xs mb-1">Zero Foreign Currency Friction</h4>
                   <p className="text-gray-400 text-[11px] leading-relaxed font-sans">
                     Settle international wholesale catalog purchases seamlessly with your active local cards or transfers (Paystack, Stripe) without incurring high forex margins.
                   </p>
                 </div>
                 <div className="p-5 rounded-xl bg-neutral-900/40 border border-white/5">
-                  <div className="text-white font-mono text-sm font-bold mb-3">03 / CONSOLIDATED FREIGHT</div>
+                  <div className="text-white font-mono text-xs font-bold mb-3 uppercase tracking-wider">03 / CONSOLIDATED FREIGHT</div>
                   <h4 className="text-white font-bold text-xs mb-1">Low-Tariff Custom Paths</h4>
                   <p className="text-gray-400 text-[11px] leading-relaxed font-sans">
                     By aggregating community packages together, we execute micro-bulk air cargo clearances, reducing shipping rates by up to 60% with complete local delivery.
                   </p>
                 </div>
               </div>
+            </div>
             </div>
 
             {/* Global Presence Section showing vendor counts per country */}
@@ -474,6 +714,8 @@ export default function App() {
             products={products}
             vendors={vendors}
             persona={persona}
+            wishlist={wishlist}
+            onToggleWishlist={handleToggleWishlist}
             onSelectProduct={handleSelectProduct}
             onStartCheckout={(p) => handleStartCheckout(p)}
           />
@@ -526,6 +768,27 @@ export default function App() {
         onSelectProduct={handleSelectProduct}
         onStartCheckout={(p) => handleStartCheckout(p)}
       />
+
+      {/* Hovering Customer Care WhatsApp widget */}
+      <a
+        href={customerCareLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-24 right-6 z-50 w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 shadow-lg text-white flex items-center justify-center hover:scale-110 active:scale-95 transition-all group cursor-pointer border border-emerald-400/20"
+        title="Contact Customer Care on WhatsApp"
+        id="floating-customer-care-btn"
+      >
+        <svg
+          className="w-7 h-7 fill-white group-hover:rotate-12 transition-transform"
+          viewBox="0 0 24 24"
+        >
+          <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.864-9.852.002-2.63-1.023-5.101-2.883-6.963C16.588 1.93 14.113.905 11.48.905c-5.438 0-9.863 4.421-9.867 9.853-.001 1.73.461 3.418 1.336 4.904l-1.01 3.693 3.793-.995zM17.153 14c-.282-.141-1.664-.822-1.921-.916-.257-.094-.443-.141-.63.141-.186.281-.722.916-.885 1.101-.162.186-.326.21-.608.069-.282-.141-1.194-.44-2.276-1.405-.841-.751-1.41-1.679-1.575-1.961-.165-.282-.018-.434.123-.574.127-.127.282-.329.424-.494.141-.165.188-.282.282-.471.095-.188.047-.353-.024-.494-.071-.141-.63-1.518-.863-2.081-.227-.546-.459-.472-.63-.481-.163-.008-.349-.01-.535-.01s-.488.07-.743.349c-.256.279-.978.956-.978 2.331s1.002 2.707 1.14 2.894c.14.188 1.974 3.014 4.781 4.225.668.288 1.19.46 1.597.59.671.213 1.282.183 1.765.11.539-.08 1.664-.68 1.897-1.337.233-.657.233-1.22.163-1.337-.07-.117-.257-.188-.539-.329z" />
+        </svg>
+        {/* Visual label animation */}
+        <span className="absolute right-16 scale-0 group-hover:scale-100 transition-transform origin-right bg-neutral-900 border border-white/10 text-white text-[10px] font-mono uppercase font-bold py-1 px-2.5 rounded shadow-xl whitespace-nowrap">
+          Customer Care
+        </span>
+      </a>
 
       {/* Global Brand Footer */}
       <GlobalFooter

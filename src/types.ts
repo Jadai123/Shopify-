@@ -45,7 +45,7 @@ export interface Order {
   product_id: string;
   amount_ngn: number;
   amount_usd: number;
-  status: 'pending' | 'completed' | 'cancelled';
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   payment_gateway: 'paystack' | 'stripe';
   created_at: string;
   referral_code_used?: string;

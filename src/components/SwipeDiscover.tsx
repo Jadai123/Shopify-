@@ -6,11 +6,13 @@ interface SwipeDiscoverProps {
   products: Product[];
   vendors: Vendor[];
   persona: UserPersona;
+  wishlist?: string[];
+  onToggleWishlist: (productId: string) => void;
   onSelectProduct: (product: Product) => void;
   onStartCheckout: (product: Product) => void;
 }
 
-export default function SwipeDiscover({ products, vendors, persona, onSelectProduct, onStartCheckout }: SwipeDiscoverProps) {
+export default function SwipeDiscover({ products, vendors, persona, wishlist = [], onToggleWishlist, onSelectProduct, onStartCheckout }: SwipeDiscoverProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [history, setHistory] = useState<number[]>([]);
@@ -179,6 +181,22 @@ export default function SwipeDiscover({ products, vendors, persona, onSelectProd
                 </div>
               </>
             )}
+
+            {/* Wishlist toggle heart icon in top-right corner of card */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleWishlist(activeProduct.id);
+              }}
+              className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition-all hover:scale-110 cursor-pointer border border-white/5"
+              title="Add/Remove from wishlist"
+            >
+              <Heart
+                className={`w-4 h-4 transition-colors ${
+                  wishlist?.includes(activeProduct.id) ? 'fill-red-500 text-red-500' : 'text-gray-300'
+                }`}
+              />
+            </button>
 
             {/* Category Badge & Country Indicator */}
             <div className="absolute top-4 left-4 flex gap-2">

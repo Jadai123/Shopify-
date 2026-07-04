@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Tag, MapPin, Eye, ShoppingCart, Percent } from 'lucide-react';
+import { Tag, MapPin, Eye, ShoppingCart, Percent, Heart } from 'lucide-react';
 import { Product, Vendor, UserPersona } from '../types';
 
 interface CategoryViewProps {
   products: Product[];
   vendors: Vendor[];
   persona: UserPersona;
+  wishlist?: string[];
+  onToggleWishlist: (productId: string) => void;
   initialCategory?: string;
   onSelectProduct: (product: Product) => void;
   onStartCheckout: (product: Product) => void;
@@ -13,7 +15,7 @@ interface CategoryViewProps {
 
 const CATEGORIES = ['All', 'Electronics', 'Fashion', 'Home & Living', 'Beauty & Personal Care'];
 
-export default function CategoryView({ products, vendors, persona, initialCategory, onSelectProduct, onStartCheckout }: CategoryViewProps) {
+export default function CategoryView({ products, vendors, persona, wishlist = [], onToggleWishlist, initialCategory, onSelectProduct, onStartCheckout }: CategoryViewProps) {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory || 'All');
   const [searchQuery, setSearchQuery] = useState('');
   const [maxPrice, setMaxPrice] = useState<number>(500000);
@@ -131,9 +133,25 @@ export default function CategoryView({ products, vendors, persona, initialCatego
                     {p.category}
                   </div>
 
+                  {/* Wishlist Toggle Heart Icon */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleWishlist(p.id);
+                    }}
+                    className="absolute top-3 right-3 z-20 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white transition-all hover:scale-110 cursor-pointer border border-white/5"
+                    title="Add to Wishlist"
+                  >
+                    <Heart
+                      className={`w-3.5 h-3.5 transition-colors ${
+                        wishlist?.includes(p.id) ? 'fill-red-500 text-red-500' : 'text-gray-300'
+                      }`}
+                    />
+                  </button>
+
                   {/* Savings percentage tag */}
                   {p.discount_percent > 0 && (
-                    <div className="absolute top-3 right-3 inline-flex items-center gap-0.5 px-2 py-0.5 rounded bg-primary text-black text-[10px] font-extrabold font-mono">
+                    <div className="absolute top-12 right-3 inline-flex items-center gap-0.5 px-2 py-0.5 rounded bg-primary text-black text-[10px] font-extrabold font-mono">
                       <Percent className="w-2.5 h-2.5" />
                       SAVE {p.discount_percent}%
                     </div>

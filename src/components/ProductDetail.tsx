@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, MessageCircle, ShoppingBag, BarChart3, Tag, Calendar, Package, ArrowRight, ShieldAlert, Award } from 'lucide-react';
+import { ChevronLeft, MessageCircle, ShoppingBag, BarChart3, Tag, Calendar, Package, ArrowRight, ShieldAlert, Award, Bell } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { Product, Vendor, PriceHistory } from '../types';
 
@@ -18,6 +18,11 @@ export default function ProductDetail({ product, vendors, onBack, onStartCheckou
   // Simulated size & color parameters
   const [selectedSize, setSelectedSize] = useState('Medium');
   const [selectedColor, setSelectedColor] = useState('Standard');
+
+  // Price Alert state
+  const [targetPriceInput, setTargetPriceInput] = useState('');
+  const [alertSuccess, setAlertSuccess] = useState('');
+  const [alertError, setAlertError] = useState('');
 
   const matchedVendor = vendors.find(v => v.id === product.vendor_id);
 
@@ -60,6 +65,39 @@ export default function ProductDetail({ product, vendors, onBack, onStartCheckou
       `Hello! I am interested in your product: "${product.name}" on Social Shopperfy. Price: ₦${finalPrice.toLocaleString()} (${selectedSize} / ${selectedColor}). Let us discuss negotiations and details!`
     );
     return `https://wa.me/${rawNumber}?text=${text}`;
+  };
+
+  const handleSetPriceAlert = () => {
+    if (!targetPriceInput) {
+      setAlertError('Please enter a target price.');
+      return;
+    }
+    setAlertError('');
+    setAlertSuccess('');
+    fetch('/api/price-alerts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        productId: product.id,
+        targetPrice: parseFloat(targetPriceInput)
+      })
+    })
+      .then(res => {
+        if (res.status === 401) {
+          throw new Error('Please sign in to set price alerts.');
+        }
+        if (!res.ok) {
+          throw new Error('Could not set price alert.');
+        }
+        return res.json();
+      })
+      .then(() => {
+        setAlertSuccess('🎯 Price alert set successfully! We will monitor the factory rates.');
+        setTargetPriceInput('');
+      })
+      .catch(err => {
+        setAlertError(err.message);
+      });
   };
 
   return (
@@ -233,6 +271,38 @@ export default function ProductDetail({ product, vendors, onBack, onStartCheckou
             <p className="text-[10px] text-center text-gray-500 font-mono">
               DIRECT TO VENDOR WA.ME COMMUNICATION • ESCROW FEEL SECURE CO-OP CHECKOUT
             </p>
+
+            {/* Price Alert setting component */}
+            <div className="mt-4 p-4 rounded-xl bg-neutral-950 border border-white/5 space-y-3">
+              <div className="flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-primary">
+                <Bell className="w-4 h-4 text-primary animate-pulse" /> Set Price Alert
+              </div>
+              <p className="text-[11px] text-gray-400 font-sans">
+                Want to buy when the factory price drops? Set your target threshold, and we will notify your user dashboard immediately!
+              </p>
+              
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-gray-400 font-bold">₦</span>
+                  <input
+                    type="number"
+                    placeholder={`e.g. ${(product.price_ngn * 0.9).toFixed(0)}`}
+                    value={targetPriceInput}
+                    onChange={(e) => setTargetPriceInput(e.target.value)}
+                    className="w-full bg-neutral-900 text-white pl-8 pr-3 py-2 rounded-lg text-xs font-mono border border-white/10 focus:border-primary focus:outline-none"
+                  />
+                </div>
+                <button
+                  onClick={handleSetPriceAlert}
+                  className="px-4 py-2 bg-primary/10 border border-primary/20 hover:bg-primary/25 text-primary rounded-lg text-xs font-mono uppercase font-black transition-all cursor-pointer"
+                >
+                  Set Target
+                </button>
+              </div>
+
+              {alertSuccess && <p className="text-[10px] font-mono text-emerald-400">{alertSuccess}</p>}
+              {alertError && <p className="text-[10px] font-mono text-red-400">{alertError}</p>}
+            </div>
           </div>
         </div>
       </div>
