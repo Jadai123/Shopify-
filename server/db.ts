@@ -88,6 +88,8 @@ export interface Profile {
   persona: 'Budget' | 'Value' | null;
   created_at: string;
   last_active_at?: string;
+  fullName?: string;
+  phoneNumber?: string;
 }
 
 export interface User {
@@ -217,7 +219,7 @@ export class Database {
     return (this.data.users || []).find(u => u.email.toLowerCase() === email.toLowerCase());
   }
 
-  registerUser(email: string, passwordHash: string, persona: 'Budget' | 'Value' | null): { user: User; profile: Profile } {
+  registerUser(email: string, passwordHash: string, persona: 'Budget' | 'Value' | null, fullName?: string, phoneNumber?: string): { user: User; profile: Profile } {
     const userId = `user-${Date.now()}`;
     const now = new Date().toISOString();
 
@@ -233,7 +235,9 @@ export class Database {
       email,
       role: email.toLowerCase() === 'musajohnjonathan@gmail.com' ? 'admin' : 'user',
       persona,
-      created_at: now
+      created_at: now,
+      fullName,
+      phoneNumber
     };
 
     if (!this.data.users) this.data.users = [];

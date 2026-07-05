@@ -28,6 +28,8 @@ const SESSIONS = new Map<string, {
   email: string;
   role: 'user' | 'admin';
   persona: 'Budget' | 'Value' | null;
+  fullName?: string;
+  phoneNumber?: string;
 }>();
 
 // Seed admin session for direct access if necessary
@@ -82,7 +84,7 @@ app.get('/api/health', (req, res) => {
 
 // Authentication APIs
 app.post('/api/auth/signup', (req, res) => {
-  const { email, password, persona } = req.body;
+  const { email, password, persona, fullName, phoneNumber } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
   }
@@ -91,14 +93,16 @@ app.post('/api/auth/signup', (req, res) => {
     return res.status(400).json({ error: 'An account with this email already exists' });
   }
   
-  const { profile } = db.registerUser(email, password, persona);
+  const { profile } = db.registerUser(email, password, persona, fullName, phoneNumber);
   
   const sid = `sid-${Date.now()}-${Math.random().toString(36).substring(2)}`;
   const sessionData = {
     id: profile.id,
     email: profile.email,
     role: profile.role,
-    persona: profile.persona
+    persona: profile.persona,
+    fullName: profile.fullName,
+    phoneNumber: profile.phoneNumber
   };
   SESSIONS.set(sid, sessionData);
 
@@ -122,7 +126,9 @@ app.post('/api/auth/signin', (req, res) => {
     id: profile.id,
     email: profile.email,
     role: profile.role,
-    persona: profile.persona
+    persona: profile.persona,
+    fullName: profile.fullName,
+    phoneNumber: profile.phoneNumber
   };
   SESSIONS.set(sid, sessionData);
 
@@ -552,7 +558,7 @@ Your behavior rules:
 
 // Serve frontend assets in production or mount Vite middleware in development
 async function start() {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV !== 'development') {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
