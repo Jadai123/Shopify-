@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, ShoppingBag, Grid, Shield, RefreshCw, Layers, Percent, ShieldCheck, Sun, Moon, ChevronLeft, ChevronRight, Check, X, Heart } from 'lucide-react';
-import { Product, Vendor, UserPersona } from './types';
+import { Product, Vendor, UserPersona, AdminSetting } from './types';
 import { supabase } from './lib/supabase';
 
 // Modular components
@@ -45,19 +45,23 @@ export default function App() {
     return (localStorage.getItem('shopperfy_theme') as 'dark' | 'light') || 'dark';
   });
 
+  // Dynamic Admin settings (Branding, Titles, Shipping, etc.)
+  const [adminSettings, setAdminSettings] = useState<AdminSetting | null>(null);
+  const [customerCareLink, setCustomerCareLink] = useState<string>('https://wa.me/2348033334444');
+
   // Home Page Carousel state
   const [carouselIndex, setCarouselIndex] = useState(0);
-  const carouselSlides = [
+  const carouselSlides = React.useMemo(() => [
     {
       title: "Direct Factory Sourcing Slashes Costs by up to 50%",
       desc: "Order directly from verified manufacturers in Nigeria, US, UK, China, and UAE.",
-      comparison: "Social Shopperfy: ₦12,500 | Alibaba: ₦18,000 (Min. Order 50) | Jumia: ₦29,000",
+      comparison: "Social Shopperfy: ₦12,500 | Wholesalers Direct: ₦18,000 (Min. Order 50) | Traditional Retail: ₦29,000",
       image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80"
     },
     {
       title: "Consolidated Micro-Freight Clearance",
       desc: "Community volume shipping clears custom import hurdles with prepaid low air/ocean tariffs.",
-      comparison: "Social Shopperfy Freight: ₦2,200/kg | DHL Direct Cargo: ₦14,500/kg",
+      comparison: `Social Shopperfy Freight: ₦${(adminSettings?.shipping_rate_kg ?? 2200).toLocaleString()}/kg | DHL Direct Cargo: ₦14,500/kg`,
       image: "https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?auto=format&fit=crop&w=1200&q=80"
     },
     {
@@ -66,7 +70,7 @@ export default function App() {
       comparison: "Single Unit Price: Dropped by 15% via community leverage rules",
       image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80"
     }
-  ];
+  ], [adminSettings]);
 
   // Auto-slide carousel
   useEffect(() => {
@@ -74,7 +78,7 @@ export default function App() {
       setCarouselIndex(prev => (prev + 1) % carouselSlides.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, []);
+  }, [carouselSlides]);
 
   // Set theme on body element
   useEffect(() => {
@@ -90,22 +94,41 @@ export default function App() {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
-  // Customer care WhatsApp link from Admin settings
-  const [customerCareLink, setCustomerCareLink] = useState<string>('https://wa.me/2348033334444');
-
-  useEffect(() => {
+  const fetchAdminSettings = () => {
     fetch('/api/admin/settings')
       .then(res => {
         if (res.ok) return res.json();
         throw new Error('Not found');
       })
       .then(data => {
-        if (data && data.whatsapp_link) {
-          setCustomerCareLink(data.whatsapp_link);
+        if (data) {
+          setAdminSettings(data);
+          if (data.whatsapp_link) {
+            setCustomerCareLink(data.whatsapp_link);
+          }
         }
       })
-      .catch(err => console.log('Using default customer care WhatsApp:', err));
-  }, []);
+      .catch(err => console.log('Using default admin settings:', err));
+  };
+
+  useEffect(() => {
+    fetchAdminSettings();
+  }, [refreshTrigger]);
+
+  const renderAppName = () => {
+    const rawName = adminSettings?.app_name || "Social Shopperfy";
+    const parts = rawName.split(" ");
+    if (parts.length > 1) {
+      const lastWord = parts.pop();
+      const firstPart = parts.join(" ");
+      return (
+        <>
+          {firstPart} <span className="text-primary">{lastWord}</span>
+        </>
+      );
+    }
+    return <span className="text-primary">{rawName}</span>;
+  };
 
   // Wishlist global state & API handlers
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -256,7 +279,7 @@ export default function App() {
       <div className="min-h-screen bg-dark-bg text-white flex flex-col items-center justify-center font-mono">
         <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 shadow-neon-green mb-6 flex items-center gap-3">
           <RefreshCw className="w-5 h-5 text-primary animate-spin" />
-          <span>Synchronizing Social Shopperfy Distributed Ledger...</span>
+          <span>Synchronizing {adminSettings?.app_name || "Social Shopperfy"} Distributed Ledger...</span>
         </div>
         <p className="text-xs text-gray-500 uppercase tracking-widest">Nigeria • US • UK • UAE • China</p>
       </div>
@@ -269,13 +292,13 @@ export default function App() {
       <div className="min-h-screen bg-dark-bg text-white flex flex-col justify-between">
         <header className="px-6 py-5 border-b border-white/5 flex justify-between items-center bg-neutral-950">
           <div className="font-display text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
-            Social <span className="text-primary">Shopperfy</span>
+            {renderAppName()}
             <Sparkles className="w-4 h-4 text-primary animate-pulse" />
           </div>
         </header>
         <PersonaOnboarding onSelect={handleSelectPersona} />
         <footer className="py-6 text-center text-xs text-gray-600 font-mono border-t border-white/5">
-          © 2026 Social Shopperfy Co-Op. Secure Ledger Enabled.
+          © 2026 {adminSettings?.app_name || "Social Shopperfy"} Co-Op. Secure Ledger Enabled.
         </footer>
       </div>
     );
@@ -297,7 +320,7 @@ export default function App() {
           onClick={() => { setView('discover'); setSelectedProduct(null); }}
           className="font-display text-xl md:text-2xl font-extrabold tracking-tight text-white flex items-center gap-2 cursor-pointer"
         >
-          Social <span className="text-primary">Shopperfy</span>
+          {renderAppName()}
           <Sparkles className="w-4 h-4 text-primary animate-pulse" />
         </div>
 
@@ -431,10 +454,14 @@ export default function App() {
                 Global B2B2C Factory Direct Sourcing Co-Op
               </span>
               <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mt-5 tracking-tight leading-none">
-                Social Shopperfy: Alibaba <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Meets Jumia</span>
+                {adminSettings?.hero_title ? (
+                  adminSettings.hero_title
+                ) : (
+                  <>Social Shopperfy: Global Sourcing <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Made Simple</span></>
+                )}
               </h1>
               <p className="text-gray-400 text-sm md:text-base mt-4 max-w-2xl mx-auto leading-relaxed">
-                Connect directly with certified international factories. Unlock group buy discounts, engage our intelligent AI negotiation agent, and complete secure checkouts in Naira or US Dollars.
+                {adminSettings?.hero_subtitle || "Connect directly with certified international factories. Unlock group buy discounts, engage our intelligent AI negotiation agent, and complete secure checkouts in Naira or US Dollars."}
               </p>
               <div className="flex justify-center gap-3 mt-6">
                 <button 
@@ -598,7 +625,7 @@ export default function App() {
                 <span className="text-[10px] font-mono font-black text-primary uppercase tracking-widest bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
                   MARKET COMPARISON DATA SHEET
                 </span>
-                <h3 className="font-display text-3xl font-black text-white mt-4">Why Social Shopperfy Beats Alibaba & Jumia</h3>
+                <h3 className="font-display text-3xl font-black text-white mt-4">Why Social Shopperfy Beats Traditional Channels</h3>
                 <p className="text-xs text-gray-500 font-mono mt-1 uppercase">Direct Naira factory rates, consolidated custom clearance, and zero MOQs.</p>
               </div>
 
@@ -609,8 +636,8 @@ export default function App() {
                     <tr className="border-b border-white/10 bg-neutral-900/50 text-gray-400">
                       <th className="p-4 uppercase tracking-wider font-bold">Key Sourcing Feature</th>
                       <th className="p-4 uppercase tracking-wider font-bold text-primary">⚡ Social Shopperfy</th>
-                      <th className="p-4 uppercase tracking-wider font-bold">🇨🇳 Alibaba Direct</th>
-                      <th className="p-4 uppercase tracking-wider font-bold">🛒 Jumia Nigeria</th>
+                      <th className="p-4 uppercase tracking-wider font-bold">🇨🇳 Wholesalers Direct</th>
+                      <th className="p-4 uppercase tracking-wider font-bold">🛒 Traditional Retail</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5 text-gray-300">
@@ -634,7 +661,7 @@ export default function App() {
                     </tr>
                     <tr>
                       <td className="p-4 font-bold text-white">Customs & Shipping</td>
-                      <td className="p-4 text-emerald-400 font-bold bg-emerald-500/5">₦2,200/kg (Fully Cleared Co-Op Consolidated)</td>
+                      <td className="p-4 text-emerald-400 font-bold bg-emerald-500/5">₦{(adminSettings?.shipping_rate_kg ?? 2200).toLocaleString()}/kg (Fully Cleared Co-Op Consolidated)</td>
                       <td className="p-4 text-red-400">DHL high fees / Custom duties surprises</td>
                       <td className="p-4">Local Delivery (high fulfillment markup)</td>
                     </tr>

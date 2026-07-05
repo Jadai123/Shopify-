@@ -1091,5 +1091,9 @@ export const SEED_ADMIN_SETTINGS: AdminSetting = {
   admin_email: 'musajohnjonathan@gmail.com',
   referral_code: 'MUSA2024',
   discount_percentage: 10,
-  whatsapp_link: 'https://wa.me/2348039999999'
+  whatsapp_link: 'https://wa.me/2348039999999',
+  app_name: 'Social Shopperfy',
+  hero_title: 'Social Shopperfy: Global Sourcing Made Simple',
+  hero_subtitle: 'Connect directly with certified international factories. Unlock group buy discounts, engage our intelligent AI negotiation agent, and complete secure checkouts in Naira or US Dollars.',
+  shipping_rate_kg: 2200
 };

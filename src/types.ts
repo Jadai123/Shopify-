@@ -37,6 +37,10 @@ export interface AdminSetting {
   referral_code: string;
   discount_percentage: number;
   whatsapp_link: string;
+  app_name?: string;
+  hero_title?: string;
+  hero_subtitle?: string;
+  shipping_rate_kg?: number;
 }
 
 export interface Order {

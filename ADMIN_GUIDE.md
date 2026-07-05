@@ -40,10 +40,15 @@ Social Shopperfy operates a distributed multi-vendor co-op structure with suppli
 * **Editing a Vendor:** Click **Edit** to adjust vendor rating stars (e.g. `4.9` or `5.0`) or update their warehouse dispatch country location.
 
 ### C. Settings & Policies Hub (`Settings` Tab)
-This regulates the global AI assistant's incentives and referral policy behavior.
+This regulates the global AI assistant's incentives, referral policy, dynamic application branding, main headings, and shipping rate calculations.
+
 * **Referral Code:** Configure the default platform-wide referral code (e.g. `COOP_DIRECT` or `LAGOS_PROMO`).
 * **Referral Discount Percentage:** Set the exact discount awarded to buyers using a valid referral code (e.g. `10%` or `12%`).
 * **Central WhatsApp Support Link:** Enter the link for the primary customer support channel to route general escrow dispute cases.
+* **Application Display Name:** Customize the entire platform's branded name (default: "Social Shopperfy"). The name dynamically propagates across the landing headers, loading overlays, and onboarding greeting cards!
+* **Co-Op Sourcing Shipping Rate per KG (₦):** Configure the co-op freight rate per KG (default: ₦2,200). The value immediately updates the price comparison tables and slider information across the homepage!
+* **Hero Title Text:** Rewrite the main marketing header text dynamically to reposition the marketplace value proposition.
+* **Hero Subtitle Description:** Rewrite the main marketing subhead or copy on-the-fly to emphasize targeted promotions or campaigns.
 
 ### D. Orders & Escrow Ledger (`Orders` Tab)
 This tracks all live and completed buyer transactions.

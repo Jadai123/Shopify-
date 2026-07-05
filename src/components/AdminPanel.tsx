@@ -53,6 +53,10 @@ export default function AdminPanel({ products, vendors, onRefreshData }: AdminPa
   const [refCode, setRefCode] = useState('');
   const [refDiscount, setRefDiscount] = useState('10');
   const [refWhatsAppLink, setRefWhatsAppLink] = useState('');
+  const [appName, setAppName] = useState('');
+  const [heroTitle, setHeroTitle] = useState('');
+  const [heroSubtitle, setHeroSubtitle] = useState('');
+  const [shippingRateKg, setShippingRateKg] = useState('2200');
 
   // Local state save
   const [actionSuccess, setActionSuccess] = useState('');
@@ -91,6 +95,10 @@ export default function AdminPanel({ products, vendors, onRefreshData }: AdminPa
           setRefCode(data.referral_code);
           setRefDiscount(data.discount_percentage.toString());
           setRefWhatsAppLink(data.whatsapp_link || '');
+          setAppName(data.app_name || '');
+          setHeroTitle(data.hero_title || '');
+          setHeroSubtitle(data.hero_subtitle || '');
+          setShippingRateKg((data.shipping_rate_kg ?? 2200).toString());
         }
       });
 
@@ -117,13 +125,18 @@ export default function AdminPanel({ products, vendors, onRefreshData }: AdminPa
       body: JSON.stringify({
         referral_code: refCode,
         discount_percentage: parseInt(refDiscount) || 10,
-        whatsapp_link: refWhatsAppLink
+        whatsapp_link: refWhatsAppLink,
+        app_name: appName,
+        hero_title: heroTitle,
+        hero_subtitle: heroSubtitle,
+        shipping_rate_kg: parseFloat(shippingRateKg) || 2200
       })
     })
       .then(res => res.json())
       .then(data => {
         setSettings(data);
-        triggerToast('Admin referral policies updated successfully.');
+        triggerToast('Admin customization and app settings updated successfully.');
+        if (onRefreshData) onRefreshData();
       });
   };
 
@@ -873,6 +886,71 @@ export default function AdminPanel({ products, vendors, onRefreshData }: AdminPa
                 className="w-full px-4 py-2.5 rounded-lg bg-neutral-900 border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-primary"
                 id="setting-whatsapp-link"
               />
+            </div>
+
+            <div className="border-t border-white/5 pt-6 space-y-6">
+              <h4 className="text-xs font-mono font-bold text-primary uppercase tracking-wider">App Branding & Customization</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-2">
+                    Application Display Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={appName}
+                    onChange={(e) => setAppName(e.target.value)}
+                    placeholder="Social Shopperfy"
+                    className="w-full px-4 py-2.5 rounded-lg bg-neutral-900 border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-primary"
+                    id="setting-app-name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-2">
+                    Co-Op Sourcing Shipping Rate per KG (₦)
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={shippingRateKg}
+                    onChange={(e) => setShippingRateKg(e.target.value)}
+                    placeholder="2200"
+                    className="w-full px-4 py-2.5 rounded-lg bg-neutral-900 border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-primary"
+                    id="setting-shipping-rate"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-2">
+                  Hero Title Text
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={heroTitle}
+                  onChange={(e) => setHeroTitle(e.target.value)}
+                  placeholder="Social Shopperfy: Global Sourcing Made Simple"
+                  className="w-full px-4 py-2.5 rounded-lg bg-neutral-900 border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-primary"
+                  id="setting-hero-title"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-2">
+                  Hero Subtitle Description
+                </label>
+                <textarea
+                  required
+                  value={heroSubtitle}
+                  onChange={(e) => setHeroSubtitle(e.target.value)}
+                  placeholder="Connect directly with certified international factories..."
+                  className="w-full h-24 px-4 py-2.5 rounded-lg bg-neutral-900 border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-primary resize-none"
+                  id="setting-hero-subtitle"
+                />
+              </div>
             </div>
 
             <button
