@@ -55,7 +55,7 @@ export default function CustomerDashboard({ user, products, vendors, onSignOut, 
               o.status === 'processing' ? 'Processing' : 
               o.status === 'shipped' ? 'Shipped 🚢' : 
               o.status === 'delivered' ? 'Delivered ✅' : 'Cancelled ❌';
-            newNotifications.push(`🚨 Update on Order ${o.id.replace('order-', '#')}: Clearance admin has updated your ledger status to [${statusLabel}].`);
+            newNotifications.push(`🚨 Update on Order ${o.id.replace('order-', '#')}: Clearance coordinator has updated your shipping status to [${statusLabel}].`);
           }
         });
 

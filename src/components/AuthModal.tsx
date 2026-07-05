@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Mail, Lock, ShieldCheck, Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
+import { X, Mail, Lock, ShieldCheck, Sparkles, RefreshCw, AlertCircle, User, Phone } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface AuthModalProps {
@@ -14,6 +14,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialTab = 'si
   const [tab, setTab] = useState<'signin' | 'signup'>(initialTab);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -26,6 +29,25 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialTab = 'si
       return;
     }
 
+    if (tab === 'signup') {
+      if (!fullName.trim()) {
+        setError('Please provide your full name.');
+        return;
+      }
+      if (!phoneNumber.trim()) {
+        setError('Please provide your WhatsApp phone number.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('Passwords do not match. Please verify your password entries.');
+        return;
+      }
+      if (password.length < 5) {
+        setError('For security, password must be at least 5 characters long.');
+        return;
+      }
+    }
+
     setError('');
     setLoading(true);
 
@@ -36,6 +58,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialTab = 'si
           password: password.trim(),
           options: {
             data: {
+              fullName: fullName.trim(),
+              phoneNumber: phoneNumber.trim(),
               role: 'user',
               persona: persona
             }
@@ -79,7 +103,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialTab = 'si
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in" id="auth-modal-overlay">
       <div 
-        className="relative w-full max-w-md bg-neutral-950 border border-white/10 rounded-2xl shadow-2xl p-6 md:p-8 overflow-hidden"
+        className="relative w-full max-w-md bg-neutral-950 border border-white/10 rounded-2xl shadow-2xl p-6 md:p-8 overflow-hidden max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
         id="auth-modal-container"
       >
@@ -138,6 +162,50 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialTab = 'si
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4 relative z-10" id="auth-form-node">
+          {tab === 'signup' && (
+            <>
+              <div>
+                <label className="block text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1.5">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                    <User className="w-4 h-4" />
+                  </span>
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Musa John"
+                    required
+                    className="w-full pl-10 pr-4 py-2.5 bg-neutral-900 border border-white/5 focus:border-primary/50 focus:ring-1 focus:ring-primary/30 rounded-lg text-sm text-white placeholder-gray-600 font-mono focus:outline-none transition-all"
+                    id="auth-fullname-input"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1.5">
+                  WhatsApp Phone Number
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                    <Phone className="w-4 h-4" />
+                  </span>
+                  <input
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="e.g. +234 803 999 9999"
+                    required
+                    className="w-full pl-10 pr-4 py-2.5 bg-neutral-900 border border-white/5 focus:border-primary/50 focus:ring-1 focus:ring-primary/30 rounded-lg text-sm text-white placeholder-gray-600 font-mono focus:outline-none transition-all"
+                    id="auth-phone-input"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
           <div>
             <label className="block text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1.5">
               Email Address
@@ -177,6 +245,28 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialTab = 'si
               />
             </div>
           </div>
+
+          {tab === 'signup' && (
+            <div>
+              <label className="block text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1.5">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                  <Lock className="w-4 h-4" />
+                </span>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  className="w-full pl-10 pr-4 py-2.5 bg-neutral-900 border border-white/5 focus:border-primary/50 focus:ring-1 focus:ring-primary/30 rounded-lg text-sm text-white placeholder-gray-600 font-mono focus:outline-none transition-all"
+                  id="auth-confirmpassword-input"
+                />
+              </div>
+            </div>
+          )}
 
           {tab === 'signup' && (
             <div className="p-3 rounded-lg border border-white/5 bg-neutral-900/50 text-[11px] text-gray-400 font-mono flex items-center gap-2">

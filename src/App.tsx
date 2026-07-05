@@ -18,7 +18,9 @@ import AuthModal from './components/AuthModal';
 import ProductShowcaseCarousel from './components/ProductShowcaseCarousel';
 
 export default function App() {
-  const [persona, setPersona] = useState<UserPersona>(null);
+  const [persona, setPersona] = useState<UserPersona>(() => {
+    return (localStorage.getItem('shopperfy_persona') as UserPersona) || 'Value';
+  });
   
   // Views: 'discover' | 'catalog' | 'admin' | 'checkout' | 'detail'
   const [view, setView] = useState<'discover' | 'catalog' | 'admin' | 'checkout' | 'detail'>('discover');
@@ -284,24 +286,6 @@ export default function App() {
           <span>Synchronizing {adminSettings?.app_name || "Social Shopperfy"} Distributed Ledger...</span>
         </div>
         <p className="text-xs text-gray-500 uppercase tracking-widest">Nigeria • US • UK • UAE • China</p>
-      </div>
-    );
-  }
-
-  // If no onboarding persona is established, show Onboarding selection view first
-  if (!persona) {
-    return (
-      <div className="min-h-screen bg-dark-bg text-white flex flex-col justify-between">
-        <header className="px-6 py-5 border-b border-white/5 flex justify-between items-center bg-neutral-950">
-          <div className="font-display text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
-            {renderAppName()}
-            <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-          </div>
-        </header>
-        <PersonaOnboarding onSelect={handleSelectPersona} />
-        <footer className="py-6 text-center text-xs text-gray-600 font-mono border-t border-white/5">
-          © 2026 {adminSettings?.app_name || "Social Shopperfy"} Co-Op. Secure Ledger Enabled.
-        </footer>
       </div>
     );
   }
