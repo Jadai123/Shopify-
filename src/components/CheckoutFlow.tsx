@@ -80,7 +80,7 @@ export default function CheckoutFlow({ product, vendors, onBackToMarket, onOrder
 
     // Simulate cryptographic escrow authorization delay
     setTimeout(async () => {
-      setProcessingMessage(`Confirming ledger transactions and checking security keys...`);
+      setProcessingMessage(`Confirming secure payment records and checking security credentials...`);
       
       setTimeout(async () => {
         try {
@@ -155,7 +155,7 @@ export default function CheckoutFlow({ product, vendors, onBackToMarket, onOrder
         </div>
 
         <p className="text-xs text-gray-400 mb-8 leading-relaxed">
-          The verified merchant has been alerted on ledger. You will receive package tracking information directly on your mail shortly.
+          The verified merchant has been notified of your order. You will receive package tracking information directly on your email shortly.
         </p>
 
         <button

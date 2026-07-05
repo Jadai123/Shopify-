@@ -87,6 +87,7 @@ export interface Profile {
   role: 'user' | 'admin';
   persona: 'Budget' | 'Value' | null;
   created_at: string;
+  last_active_at?: string;
 }
 
 export interface User {
@@ -181,11 +182,35 @@ export class Database {
   }
 
   getProfileByEmail(email: string): Profile | undefined {
-    return this.getProfiles().find(p => p.email.toLowerCase() === email.toLowerCase());
+    let profile = this.getProfiles().find(p => p.email.toLowerCase() === email.toLowerCase());
+    if (!profile) {
+      const user = this.getUserByEmail(email);
+      if (user) {
+        profile = {
+          id: user.id,
+          email: user.email,
+          role: user.email.toLowerCase() === 'musajohnjonathan@gmail.com' ? 'admin' : 'user',
+          persona: null,
+          created_at: user.created_at || new Date().toISOString()
+        };
+        if (!this.data.profiles) this.data.profiles = [];
+        this.data.profiles.push(profile);
+        this.save();
+      }
+    }
+    return profile;
   }
 
   getProfileById(id: string): Profile | undefined {
     return this.getProfiles().find(p => p.id === id);
+  }
+
+  updateLastActive(email: string) {
+    const profile = this.getProfileByEmail(email) as any;
+    if (profile) {
+      profile.last_active_at = new Date().toISOString();
+      this.save();
+    }
   }
 
   getUserByEmail(email: string): User | undefined {

@@ -247,9 +247,9 @@ export default function CustomerDashboard({ user, products, vendors, onSignOut, 
           </div>
 
           <div className="p-6 rounded-2xl bg-neutral-950 border border-white/5 text-gray-400 text-xs font-mono space-y-3">
-            <div className="text-white font-bold uppercase text-[10px] tracking-wider mb-2 text-primary">Security Ledger Integrity</div>
-            <p>Every transaction generated in this node is signed with RSA cryptographic parameters and direct-synchronized with our global factory clearing houses across Nigeria, UAE, China, US, and UK.</p>
-            <p>Need support or direct modification of shipping coordinates? Connect with our clearance admins over WhatsApp instantly.</p>
+            <div className="text-white font-bold uppercase text-[10px] tracking-wider mb-2 text-primary">Secure Sourcing & Guarantee</div>
+            <p>Every transaction in your account is securely handled and direct-synchronized with our global factory warehouses across Nigeria, UAE, China, US, and UK.</p>
+            <p>Need support or need to update your delivery details? Connect with our clearance coordinators over WhatsApp instantly.</p>
             <a 
               href="https://wa.me/2348039999999" 
               target="_blank" 
@@ -299,12 +299,12 @@ export default function CustomerDashboard({ user, products, vendors, onSignOut, 
                 {loading ? (
                   <div className="flex flex-col items-center justify-center py-20 font-mono text-gray-500 gap-3">
                     <RefreshCw className="w-6 h-6 animate-spin text-primary" />
-                    <span>Decrypting transaction histories...</span>
+                    <span>Loading your order history...</span>
                   </div>
                 ) : orders.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-20 text-center font-mono border border-dashed border-white/5 rounded-xl">
                     <ShoppingBag className="w-10 h-10 text-gray-700 mb-4" />
-                    <p className="text-sm text-gray-400">No transactions recorded in this node ledger yet.</p>
+                    <p className="text-sm text-gray-400">No orders placed under this account yet.</p>
                     <p className="text-xs text-gray-600 mt-1">Discover items and check out with the MUSA2024 referral code!</p>
                   </div>
                 ) : (

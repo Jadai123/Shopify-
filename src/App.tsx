@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, ShoppingBag, Grid, Shield, RefreshCw, Layers, Percent, ShieldCheck, Sun, Moon, ChevronLeft, ChevronRight, Check, X, Heart } from 'lucide-react';
+import { Sparkles, ShoppingBag, Grid, Shield, RefreshCw, Layers, Percent, ShieldCheck, Sun, Moon, ChevronLeft, ChevronRight, Check, X, Heart, Menu, LogOut, Compass, HelpCircle } from 'lucide-react';
 import { Product, Vendor, UserPersona, AdminSetting } from './types';
 import { supabase } from './lib/supabase';
 
@@ -15,6 +15,7 @@ import CheckoutFlow from './components/CheckoutFlow';
 import GlobalFooter from './components/GlobalFooter';
 import AbandonmentPrompt from './components/AbandonmentPrompt';
 import AuthModal from './components/AuthModal';
+import ProductShowcaseCarousel from './components/ProductShowcaseCarousel';
 
 export default function App() {
   const [persona, setPersona] = useState<UserPersona>(null);
@@ -39,6 +40,7 @@ export default function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState<'signin' | 'signup'>('signin');
   const [pendingCheckoutProduct, setPendingCheckoutProduct] = useState<Product | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Theme switcher state
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -304,6 +306,8 @@ export default function App() {
     );
   }
 
+  const activeView = currentUser ? view : 'discover';
+
   return (
     <div className="min-h-screen bg-dark-bg text-white flex flex-col justify-between" id="app-root">
       
@@ -324,107 +328,132 @@ export default function App() {
           <Sparkles className="w-4 h-4 text-primary animate-pulse" />
         </div>
 
-        {/* View Selection Controls */}
-        <nav className="flex items-center gap-1.5 md:gap-4 text-xs font-mono font-bold uppercase tracking-wider">
-          <button
-            onClick={() => { setView('discover'); setSelectedProduct(null); }}
-            className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors cursor-pointer ${
-              view === 'discover' ? 'text-primary bg-primary/10 border border-primary/20' : 'text-gray-400 hover:text-white'
-            }`}
-            id="nav-discover"
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Swipe</span> Discover
-          </button>
+        {/* View Selection Controls - ONLY visible to logged-in users via clean dropdown */}
+        {currentUser ? (
+          <div className="relative">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="px-4 py-2 bg-neutral-900 hover:bg-neutral-800 border border-white/10 rounded-xl flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-white transition-all cursor-pointer"
+              id="coop-menu-trigger"
+            >
+              <Menu className="w-4 h-4 text-primary" />
+              Co-Op Menu
+            </button>
+            
+            {isMenuOpen && (
+              <>
+                {/* Click outside backdrop */}
+                <div className="fixed inset-0 z-30" onClick={() => setIsMenuOpen(false)} />
+                <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-neutral-950 border border-white/10 p-3 shadow-2xl z-40 animate-fade-in font-mono text-xs">
+                  <div className="px-3 py-2 text-[10px] text-gray-500 uppercase tracking-widest border-b border-white/5 mb-2 font-bold">
+                    Co-Op Navigator
+                  </div>
+                  
+                  <button
+                    onClick={() => { setView('discover'); setSelectedProduct(null); setIsMenuOpen(false); }}
+                    className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors ${
+                      view === 'discover' ? 'text-primary bg-primary/10' : 'text-gray-300 hover:bg-neutral-900 hover:text-white'
+                    }`}
+                  >
+                    <Compass className="w-4 h-4" />
+                    Swipe Discover
+                  </button>
 
-          <button
-            onClick={() => { setView('catalog'); setSelectedProduct(null); }}
-            className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors cursor-pointer ${
-              view === 'catalog' ? 'text-primary bg-primary/10 border border-primary/20' : 'text-gray-400 hover:text-white'
-            }`}
-            id="nav-catalog"
-          >
-            <Grid className="w-3.5 h-3.5" />
-            Browse <span className="hidden sm:inline">Catalog</span>
-          </button>
+                  <button
+                    onClick={() => { setView('catalog'); setSelectedProduct(null); setIsMenuOpen(false); }}
+                    className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors ${
+                      view === 'catalog' ? 'text-primary bg-primary/10' : 'text-gray-300 hover:bg-neutral-900 hover:text-white'
+                    }`}
+                  >
+                    <Grid className="w-4 h-4" />
+                    Browse Catalog & Gallery
+                  </button>
 
-          <button
-            onClick={() => {
-              if (!currentUser) {
-                setAuthTab('signin');
-                setIsAuthOpen(true);
-              } else {
-                setView('admin');
-                setSelectedProduct(null);
-              }
-            }}
-            className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors cursor-pointer ${
-              view === 'admin' ? 'text-secondary bg-secondary/10 border border-secondary/20' : 'text-gray-400 hover:text-white'
-            }`}
-            id="nav-admin"
-          >
-            <Shield className="w-3.5 h-3.5" />
-            {currentUser ? (currentUser.role === 'admin' ? 'Admin Ledger' : 'My Account') : 'My Account'}
-          </button>
-        </nav>
+                  <button
+                    onClick={() => { setView('admin'); setSelectedProduct(null); setIsMenuOpen(false); }}
+                    className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors ${
+                      view === 'admin' ? 'text-secondary bg-secondary/10' : 'text-gray-300 hover:bg-neutral-900 hover:text-white'
+                    }`}
+                  >
+                    <Shield className="w-4 h-4" />
+                    {currentUser.role === 'admin' ? '🛠️ Co-Op Admin Ledger' : '👤 My Sourcing Account'}
+                  </button>
+
+                  <div className="border-t border-white/5 my-2 pt-2">
+                    <button
+                      onClick={() => { handleSelectPersona(null); setIsMenuOpen(false); }}
+                      className="w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 text-gray-400 hover:bg-neutral-900 hover:text-white transition-colors"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      Reset Onboarding Profile
+                    </button>
+
+                    <button
+                      onClick={async () => {
+                        await supabase.auth.signOut();
+                        setView('discover');
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 text-red-400 hover:bg-red-500/10 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Secure Log Out
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        ) : null}
 
         {/* Profile switches and Refresh info */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-900 border border-white/5">
-            <span className="text-[10px] font-mono text-gray-500 uppercase">Hunt:</span>
-            <button
-              onClick={() => handleSelectPersona(persona === 'Budget' ? 'Value' : 'Budget')}
-              className={`text-[10px] font-mono font-bold uppercase rounded-full px-2 py-0.5 flex items-center gap-1 transition-all cursor-pointer ${
-                persona === 'Budget' ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-secondary/20 text-secondary border border-secondary/30'
-              }`}
-              title="Click to switch onboarding profile"
-              id="header-persona-switcher"
-            >
-              {persona === 'Budget' ? (
-                <>
-                  <Percent className="w-2.5 h-2.5" />
-                  Budget Slash
-                </>
-              ) : (
-                <>
-                  <ShieldCheck className="w-2.5 h-2.5" />
-                  Value Specs
-                </>
-              )}
-            </button>
-          </div>
-          
           {currentUser ? (
-            <button
-              onClick={async () => {
-                await supabase.auth.signOut();
-                setView('discover');
-              }}
-              className="text-[10px] font-mono text-red-400 hover:text-red-300 border border-red-500/10 px-2 py-1.5 rounded bg-neutral-900 cursor-pointer"
-              id="signout-btn"
-            >
-              Sign Out
-            </button>
+            <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-900 border border-white/5">
+                <span className="text-[10px] font-mono text-gray-500 uppercase">Hunt Profile:</span>
+                <span className="text-[10px] font-mono font-bold uppercase text-primary">
+                  {persona === 'Budget' ? 'Budget Slash' : 'Value Specs'}
+                </span>
+              </div>
+              
+              <button
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  setView('discover');
+                }}
+                className="text-[10px] font-mono text-red-400 hover:text-red-300 border border-red-500/10 px-3 py-2 rounded bg-neutral-900 cursor-pointer flex items-center gap-1.5"
+                id="signout-btn"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Sign Out
+              </button>
+            </div>
           ) : (
-            <button
-              onClick={() => {
-                setAuthTab('signin');
-                setIsAuthOpen(true);
-              }}
-              className="text-[10px] font-mono text-primary hover:text-white border border-primary/20 px-2.5 py-1.5 rounded bg-neutral-900 font-bold cursor-pointer"
-              id="signin-btn"
-            >
-              Sign In
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setAuthTab('signin');
+                  setIsAuthOpen(true);
+                }}
+                className="text-xs font-mono text-gray-300 hover:text-white border border-white/10 px-3 py-2 rounded-xl bg-neutral-900 font-bold cursor-pointer transition-all hover:border-white/20"
+                id="signin-btn"
+              >
+                Log In
+              </button>
+              
+              <button
+                onClick={() => {
+                  setAuthTab('signup');
+                  setIsAuthOpen(true);
+                }}
+                className="text-xs font-mono text-black bg-primary hover:bg-primary/95 px-4 py-2 rounded-xl font-black cursor-pointer transition-all shadow-md shadow-primary/20"
+                id="signup-btn"
+              >
+                Create Account
+              </button>
+            </div>
           )}
-
-          <button
-            onClick={() => handleSelectPersona(null)}
-            className="text-[10px] font-mono text-gray-500 hover:text-white border border-white/5 px-2 py-1.5 rounded bg-neutral-900 cursor-pointer"
-            id="reset-persona-btn"
-          >
-            Onboard
-          </button>
 
           {/* Theme switcher toggle */}
           <button
@@ -446,7 +475,7 @@ export default function App() {
           </div>
         )}
 
-        {view === 'discover' && !selectedProduct && (
+        {activeView === 'discover' && !selectedProduct && (
           <div className="space-y-16">
             {/* 1. Hero / Title Section */}
             <div className="text-center max-w-4xl mx-auto px-4 pt-10 pb-4 animate-fade-in">
@@ -463,20 +492,38 @@ export default function App() {
               <p className="text-gray-400 text-sm md:text-base mt-4 max-w-2xl mx-auto leading-relaxed">
                 {adminSettings?.hero_subtitle || "Connect directly with certified international factories. Unlock group buy discounts, engage our intelligent AI negotiation agent, and complete secure checkouts in Naira or US Dollars."}
               </p>
-              <div className="flex justify-center gap-3 mt-6">
-                <button 
-                  onClick={() => handleNavigateToCategory('Electronics')} 
-                  className="px-5 py-2.5 rounded-lg bg-primary text-black font-extrabold text-xs tracking-wider uppercase hover:shadow-neon-green transition-shadow cursor-pointer"
-                >
-                  Explore Factory Tech
-                </button>
-                <button 
-                  onClick={() => { setView('catalog'); }} 
-                  className="px-5 py-2.5 rounded-lg bg-neutral-900 border border-white/10 text-gray-300 font-extrabold text-xs tracking-wider uppercase hover:border-white/20 transition-all cursor-pointer"
-                >
-                  Browse Catalog Directory
-                </button>
-              </div>
+              
+              {currentUser ? (
+                <div className="flex justify-center gap-3 mt-6">
+                  <button 
+                    onClick={() => handleNavigateToCategory('Electronics')} 
+                    className="px-5 py-2.5 rounded-lg bg-primary text-black font-extrabold text-xs tracking-wider uppercase hover:shadow-neon-green transition-shadow cursor-pointer"
+                  >
+                    Explore Factory Tech
+                  </button>
+                  <button 
+                    onClick={() => { setView('catalog'); }} 
+                    className="px-5 py-2.5 rounded-lg bg-neutral-900 border border-white/10 text-gray-300 font-extrabold text-xs tracking-wider uppercase hover:border-white/20 transition-all cursor-pointer"
+                  >
+                    Browse Catalog Directory
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col sm:flex-row justify-center gap-3 mt-6 max-w-md mx-auto">
+                  <button 
+                    onClick={() => { setAuthTab('signup'); setIsAuthOpen(true); }} 
+                    className="px-6 py-3 rounded-xl bg-primary text-black font-black text-xs tracking-wider uppercase hover:shadow-neon-green transition-all cursor-pointer shadow-lg shadow-primary/25"
+                  >
+                    Create Sourcing Account
+                  </button>
+                  <button 
+                    onClick={() => { setAuthTab('signin'); setIsAuthOpen(true); }} 
+                    className="px-6 py-3 rounded-xl bg-neutral-900 border border-white/10 text-gray-300 font-bold text-xs tracking-wider uppercase hover:border-white/20 transition-all cursor-pointer"
+                  >
+                    Client Log In
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Interactive Image Carousel */}
@@ -574,51 +621,65 @@ export default function App() {
             })()}
 
             {/* 2. Interactive Curated Swipe Deck */}
-            <div className="max-w-md mx-auto px-4">
-              <div className="text-center mb-6">
-                <h2 className="font-display text-xs font-extrabold text-primary uppercase tracking-widest font-mono">FACTORY HIGHLIGHT DECK</h2>
-                <p className="text-[10px] text-gray-500 font-mono uppercase mt-1">Swipe cards to review, like, and custom negotiate</p>
-              </div>
-              <SwipeDiscover
-                products={products}
-                vendors={vendors}
-                persona={persona}
-                wishlist={wishlist}
-                onToggleWishlist={handleToggleWishlist}
-                onSelectProduct={handleSelectProduct}
-                onStartCheckout={(p) => handleStartCheckout(p)}
-              />
-            </div>
-
-            {/* Featured Categories Row */}
-            <div className="max-w-5xl mx-auto px-4">
-              <div className="flex justify-between items-end mb-6">
-                <div>
-                  <h3 className="font-display text-xl font-bold text-white">Direct Sourcing Sectors</h3>
-                  <p className="text-xs text-gray-500">Uncompromised quality straight from verified factory assemblies.</p>
+            {currentUser ? (
+              <>
+                <div className="max-w-md mx-auto px-4">
+                  <div className="text-center mb-6">
+                    <h2 className="font-display text-xs font-extrabold text-primary uppercase tracking-widest font-mono">FACTORY HIGHLIGHT DECK</h2>
+                    <p className="text-[10px] text-gray-500 font-mono uppercase mt-1">Swipe cards to review, like, and custom negotiate</p>
+                  </div>
+                  <SwipeDiscover
+                    products={products}
+                    vendors={vendors}
+                    persona={persona}
+                    wishlist={wishlist}
+                    onToggleWishlist={handleToggleWishlist}
+                    onSelectProduct={handleSelectProduct}
+                    onStartCheckout={(p) => handleStartCheckout(p)}
+                  />
                 </div>
-                <button onClick={() => setView('catalog')} className="text-xs text-primary hover:underline font-mono uppercase tracking-wider">View All</button>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {Array.from(new Set(products.map(p => p.category as string))).slice(0, 4).map(cat => {
-                  const catProds = products.filter(p => p.category === cat);
-                  const sampleImg = catProds[0]?.images[0] || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80';
-                  return (
-                    <div 
-                      key={cat}
-                      onClick={() => handleNavigateToCategory(cat as string)}
-                      className="group relative h-40 rounded-xl overflow-hidden border border-white/5 bg-neutral-900 cursor-pointer hover:border-primary/40 transition-all"
-                    >
-                      <img src={sampleImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-45 group-hover:scale-105 transition-transform" referrerPolicy="no-referrer" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/40 to-transparent"></div>
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <div className="text-[9px] font-mono font-bold uppercase text-primary mb-1">{catProds.length} ASSETS</div>
-                        <h4 className="text-xs font-bold text-white font-display uppercase tracking-wider">{cat}</h4>
-                      </div>
+
+                {/* Featured Categories Row */}
+                <div className="max-w-5xl mx-auto px-4">
+                  <div className="flex justify-between items-end mb-6">
+                    <div>
+                      <h3 className="font-display text-xl font-bold text-white">Direct Sourcing Sectors</h3>
+                      <p className="text-xs text-gray-500">Uncompromised quality straight from verified factory assemblies.</p>
                     </div>
-                  );
-                })}
-              </div>
+                    <button onClick={() => setView('catalog')} className="text-xs text-primary hover:underline font-mono uppercase tracking-wider">View All</button>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {Array.from(new Set(products.map(p => p.category as string))).slice(0, 4).map(cat => {
+                      const catProds = products.filter(p => p.category === cat);
+                      const sampleImg = catProds[0]?.images[0] || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80';
+                      return (
+                        <div 
+                          key={cat}
+                          onClick={() => handleNavigateToCategory(cat as string)}
+                          className="group relative h-40 rounded-xl overflow-hidden border border-white/5 bg-neutral-900 cursor-pointer hover:border-primary/40 transition-all"
+                        >
+                          <img src={sampleImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-45 group-hover:scale-105 transition-transform" referrerPolicy="no-referrer" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/40 to-transparent"></div>
+                          <div className="absolute bottom-4 left-4 right-4">
+                            <div className="text-[9px] font-mono font-bold uppercase text-primary mb-1">{catProds.length} ASSETS</div>
+                            <h4 className="text-xs font-bold text-white font-display uppercase tracking-wider">{cat}</h4>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <ProductShowcaseCarousel
+                products={products}
+                onUnlock={(p) => {
+                  setPendingCheckoutProduct(p);
+                  setAuthTab('signup');
+                  setIsAuthOpen(true);
+                }}
+              />
+            )}
              {/* Why Us / Comparison table section */}
             <div className="max-w-5xl mx-auto px-4 py-12 border-y border-white/5 bg-neutral-950/20 rounded-3xl" id="coop-comparison-section">
               <div className="text-center mb-10">
@@ -700,7 +761,6 @@ export default function App() {
                 </div>
               </div>
             </div>
-            </div>
 
             {/* Global Presence Section showing vendor counts per country */}
             <div className="max-w-5xl mx-auto px-4 pb-8">
@@ -733,6 +793,43 @@ export default function App() {
                 })()}
               </div>
             </div>
+
+            {/* Bottom Invitation Call-To-Action Card for Unauthenticated Guests */}
+            {!currentUser && (
+              <div className="max-w-5xl mx-auto px-4 pb-12 mt-6">
+                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-950 border border-primary/20 p-8 md:p-12 text-center shadow-2xl">
+                  {/* Subtle blur highlights */}
+                  <div className="absolute top-0 left-1/4 w-72 h-72 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+                  <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
+
+                  <div className="relative z-10 max-w-2xl mx-auto">
+                    <span className="text-[10px] font-mono font-black text-primary uppercase tracking-widest bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                      SECURE CLIENT REGISTRATION
+                    </span>
+                    <h3 className="font-display text-2xl md:text-4xl font-black text-white mt-4 leading-tight">
+                      Ready to Unlock Exclusive Sourcing Benefits?
+                    </h3>
+                    <p className="text-gray-400 text-xs md:text-sm mt-3 leading-relaxed">
+                      Create your secure profile in 30 seconds to access our entire factory catalog, initiate intelligent AI negotiations, and enjoy co-op shipping rates under ₦{(adminSettings?.shipping_rate_kg ?? 2200).toLocaleString()}/kg.
+                    </p>
+                    <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+                      <button
+                        onClick={() => { setAuthTab('signup'); setIsAuthOpen(true); }}
+                        className="px-8 py-3.5 rounded-xl bg-primary hover:bg-primary/95 text-black font-mono font-bold uppercase tracking-wider text-xs shadow-lg shadow-primary/20 cursor-pointer active:scale-95 transition-all"
+                      >
+                        Create Secure Account
+                      </button>
+                      <button
+                        onClick={() => { setAuthTab('signin'); setIsAuthOpen(true); }}
+                        className="px-8 py-3.5 rounded-xl bg-neutral-900 border border-white/10 text-gray-300 font-bold font-mono uppercase tracking-wider text-xs hover:border-white/20 transition-all cursor-pointer active:scale-95"
+                      >
+                        Log In to Existing Account
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

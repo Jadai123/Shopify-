@@ -28,7 +28,7 @@ export default function GlobalFooter({ onNavigateToCategory, onSetView }: Global
             Social <span className="text-primary">Shopperfy</span>
           </h2>
           <p className="text-gray-400 text-xs leading-relaxed mb-6">
-            Establishing the absolute frontier of high-tech global multi-vendor trading. Discover direct factory inventories with real price tracking ledger transparency.
+            Establishing the absolute frontier of high-tech global multi-vendor trading. Discover direct factory inventories with real price tracking and complete transparency.
           </p>
           <div className="space-y-2 text-xs text-gray-400 font-mono">
             <div className="flex items-center gap-2">
@@ -65,7 +65,7 @@ export default function GlobalFooter({ onNavigateToCategory, onSetView }: Global
                 <BarChart3 className="w-3.5 h-3.5 text-primary" />
                 Price Analytics Charts
               </h4>
-              <p className="text-gray-400 leading-relaxed">High-precision 30-day historic charts tracking actual ledger values.</p>
+              <p className="text-gray-400 leading-relaxed">High-precision 30-day historic charts tracking actual market values.</p>
             </div>
             <div className="p-3 rounded-lg bg-dark-surface border border-white/5">
               <h4 className="font-bold text-white flex items-center gap-1.5 mb-1">
@@ -225,7 +225,7 @@ export default function GlobalFooter({ onNavigateToCategory, onSetView }: Global
                   <p>Social Shopperfy operates a specialized multi-vendor social commerce system. We collect shopper preferences and "swipe to match" feedback logs to generate customized discounts and technical comparison layouts.</p>
                   
                   <p className="font-bold text-white text-base">2. Cross-Border Data Transfers</p>
-                  <p>To support factory-direct fulfillment channels, customer contact and delivery details are transferred securely to verified Co-Op merchant nodes in Nigeria, USA, UK, China, and the UAE.</p>
+                  <p>To support factory-direct fulfillment channels, customer contact and delivery details are transferred securely to verified Co-Op merchant warehouses and shipping partners in Nigeria, USA, UK, China, and the UAE.</p>
                   
                   <p className="font-bold text-white text-base">3. Data Retainment</p>
                   <p>Your session swipes and preferences are saved locally. You may completely reset your onboarding history at any time by clicking the "Onboard" button in the navigation header.</p>
@@ -247,11 +247,11 @@ export default function GlobalFooter({ onNavigateToCategory, onSetView }: Global
 
               {activeModal === 'escrow' && (
                 <>
-                  <p className="font-bold text-white text-base">1. Double-Sided Ledger Escrow</p>
-                  <p>Social Shopperfy protects both consumers and wholesale factory merchants via state-of-the-art escrow processing. Once you finish checkout, funds are flagged as "Escrow Locked" inside our centralized ledger.</p>
+                  <p className="font-bold text-white text-base">1. Double-Sided Secure Escrow</p>
+                  <p>Social Shopperfy protects both consumers and wholesale factory merchants via state-of-the-art escrow processing. Once you finish checkout, funds are flagged as "Escrow Locked" inside our secure system records.</p>
                   
                   <p className="font-bold text-white text-base">2. Shipment Validation Corridor</p>
-                  <p>The vendor is automatically notified via our WhatsApp ledger integration. They are allocated a 3 to 7-day corridor to dispatch inventory and provide valid tracking. If the vendor fails to submit proof of shipment, funds are instantly refunded to the buyer.</p>
+                  <p>The vendor is automatically notified via our WhatsApp transaction integration. They are allocated a 3 to 7-day corridor to dispatch inventory and provide valid tracking. If the vendor fails to submit proof of shipment, funds are instantly refunded to the buyer.</p>
                   
                   <p className="font-bold text-white text-base">3. Confirmation and Release</p>
                   <p>Once tracking records demonstrate successful delivery, the buyer is requested to release the funds. Uncontested delivery records will trigger automatic fund releases to the merchant after 14 days.</p>

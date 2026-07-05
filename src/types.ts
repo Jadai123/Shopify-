@@ -58,6 +58,15 @@ export interface Order {
 
 export type UserPersona = 'Budget' | 'Value' | null;
 
+export interface Profile {
+  id: string;
+  email: string;
+  role: 'user' | 'admin';
+  persona: UserPersona;
+  created_at: string;
+  last_active_at?: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';

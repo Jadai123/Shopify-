@@ -378,7 +378,7 @@ export default function ProductDetail({ product, vendors, onBack, onStartCheckou
           <div className="mt-4 pt-4 border-t border-white/5 flex items-center gap-3 text-[10px] text-gray-400">
             <ShieldAlert className="w-4 h-4 text-primary shrink-0" />
             <p className="leading-tight">
-              Pricing is compiled from real-time global manufacturer rates with direct co-op ledger validation.
+              Pricing is compiled from real-time global manufacturer rates with direct co-op sourcing validation.
             </p>
           </div>
         </div>

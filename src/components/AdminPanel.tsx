@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Plus, Edit2, Trash2, Settings, ShoppingBag, Users, Check, Lock, RefreshCw, X, HelpCircle } from 'lucide-react';
-import { Product, Vendor, AdminSetting, Order } from '../types';
+import { Product, Vendor, AdminSetting, Order, Profile } from '../types';
 
 interface AdminPanelProps {
   products: Product[];
@@ -14,12 +14,13 @@ export default function AdminPanel({ products, vendors, onRefreshData }: AdminPa
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
 
-  // Tabs: 'products' | 'vendors' | 'settings' | 'orders'
-  const [activeTab, setActiveTab] = useState<'products' | 'vendors' | 'settings' | 'orders'>('products');
+  // Tabs: 'products' | 'vendors' | 'settings' | 'orders' | 'users'
+  const [activeTab, setActiveTab] = useState<'products' | 'vendors' | 'settings' | 'orders' | 'users'>('products');
 
   // Admin settings state
   const [settings, setSettings] = useState<AdminSetting | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
 
   // Form states for creating/editing
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -71,6 +72,7 @@ export default function AdminPanel({ products, vendors, onRefreshData }: AdminPa
 
   // Clickable/expandable order registry
   const [selectedAdminOrder, setSelectedAdminOrder] = useState<Order | null>(null);
+  const [userSearch, setUserSearch] = useState('');
 
   const adminAuthHeader = 'Basic ' + btoa('musajohnjonathan@gmail.com:adminJohn');
 
@@ -111,6 +113,16 @@ export default function AdminPanel({ products, vendors, onRefreshData }: AdminPa
         setOrders(data || []);
       })
       .catch(err => console.error('[Error loading orders]:', err));
+
+    // Fetch registered user profiles with auth
+    fetch('/api/admin/users', {
+      headers: { 'Authorization': adminAuthHeader }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setProfiles(data || []);
+      })
+      .catch(err => console.error('[Error loading users]:', err));
   };
 
   // Trigger settings update
@@ -418,6 +430,7 @@ export default function AdminPanel({ products, vendors, onRefreshData }: AdminPa
           { id: 'products', label: 'Products & Stock', icon: ShoppingBag },
           { id: 'vendors', label: 'Vendors Registry', icon: Users },
           { id: 'orders', label: 'Completed Sales Log', icon: ShoppingBag },
+          { id: 'users', label: 'Registered Accounts', icon: Users },
           { id: 'settings', label: 'Referral & General Rules', icon: Settings }
         ].map(tab => {
           const TabIcon = tab.icon;
@@ -687,8 +700,8 @@ export default function AdminPanel({ products, vendors, onRefreshData }: AdminPa
       {activeTab === 'orders' && (
         <div className="space-y-6" id="panel-orders">
           <div>
-            <h3 className="font-display text-xl font-bold text-white mb-1">Fulfillment Ledger (Order Registry)</h3>
-            <p className="text-xs text-gray-500">Real-time compilation of global purchases completed via gateways. Click on any row to expand full secure match ledger details.</p>
+            <h3 className="font-display text-xl font-bold text-white mb-1">Fulfillment Register (Order Registry)</h3>
+            <p className="text-xs text-gray-500">Real-time compilation of global purchases completed via gateways. Click on any row to expand full secure match transaction details.</p>
           </div>
 
           <div className="overflow-x-auto rounded-xl border border-white/5 bg-dark-surface">
@@ -961,6 +974,131 @@ export default function AdminPanel({ products, vendors, onRefreshData }: AdminPa
               Update Global Policies
             </button>
           </form>
+        </div>
+      )}
+
+      {/* 5. Registered Accounts Tab */}
+      {activeTab === 'users' && (
+        <div className="space-y-6" id="panel-users-ledger">
+          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+            <div>
+              <h3 className="font-display text-xl font-bold text-white">Registered Accounts & Status Ledger</h3>
+              <p className="text-gray-400 text-xs font-mono mt-1">Real-time Node Status Monitor for Distributed Co-Op Marketplace</p>
+            </div>
+            
+            {/* Quick Metrics */}
+            <div className="flex gap-4">
+              <div className="px-4 py-2.5 rounded-lg border border-white/5 bg-neutral-900/40 text-center min-w-[100px]">
+                <div className="text-xs text-gray-500 font-mono uppercase">Total Nodes</div>
+                <div className="text-lg font-bold text-white font-mono mt-0.5">{profiles.length}</div>
+              </div>
+              <div className="px-4 py-2.5 rounded-lg border border-white/5 bg-neutral-900/40 text-center min-w-[100px]">
+                <div className="text-xs text-gray-500 font-mono uppercase">Active Online</div>
+                <div className="text-lg font-bold text-emerald-400 font-mono mt-0.5">
+                  {profiles.filter(p => {
+                    if (!p.last_active_at) return false;
+                    return (Date.now() - new Date(p.last_active_at).getTime()) < 120000;
+                  }).length}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto rounded-xl border border-white/5 bg-dark-surface">
+            <table className="w-full text-left border-collapse text-xs font-mono">
+              <thead>
+                <tr className="border-b border-white/5 text-gray-400 uppercase bg-neutral-950 font-bold">
+                  <th className="p-4">User Email Address</th>
+                  <th className="p-4">Assigned Role</th>
+                  <th className="p-4">Sourcing Persona</th>
+                  <th className="p-4">Enrolled Timestamp</th>
+                  <th className="p-4">Last Activity Pulse</th>
+                  <th className="p-4 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {profiles.map(p => {
+                  const isOnline = p.is_online || (p.last_active_at 
+                    ? (Date.now() - new Date(p.last_active_at).getTime()) < 120000 
+                    : false);
+
+                  return (
+                    <tr key={p.id} className="hover:bg-white/5 transition-colors">
+                      <td className="p-4">
+                        <div className="font-bold text-white text-sm">{p.email}</div>
+                        <div className="text-[9px] text-gray-500">ID: {p.id}</div>
+                      </td>
+                      <td className="p-4">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          p.role === 'admin' 
+                            ? 'bg-red-500/10 text-red-500 border border-red-500/20' 
+                            : 'bg-primary/10 text-primary border border-primary/20'
+                        }`}>
+                          {p.role}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        {p.persona ? (
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                            p.persona === 'Budget' 
+                              ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' 
+                              : 'bg-sky-500/10 text-sky-500 border border-sky-500/20'
+                          }`}>
+                            {p.persona} Shopper
+                          </span>
+                        ) : (
+                          <span className="text-gray-600 italic">None Selected</span>
+                        )}
+                      </td>
+                      <td className="p-4 text-gray-400">
+                        {new Date(p.created_at).toLocaleString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </td>
+                      <td className="p-4 text-gray-400">
+                        {p.last_active_at ? (
+                          new Date(p.last_active_at).toLocaleString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                          })
+                        ) : (
+                          <span className="text-gray-600">—</span>
+                        )}
+                      </td>
+                      <td className="p-4 text-center">
+                        {isOnline ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase border border-emerald-500/20">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            Online
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-neutral-900 text-gray-500 text-[10px] font-bold uppercase border border-white/5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-gray-600" />
+                            Offline
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {profiles.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="p-8 text-center text-gray-500 font-mono">
+                      No registered user accounts found in client directory.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

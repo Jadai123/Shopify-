@@ -43,7 +43,11 @@ const getSessionFromRequest = (req: express.Request) => {
   const match = cookieHeader.match(/shopperfy_sid=([^;]+)/);
   if (!match) return null;
   const sid = match[1];
-  return SESSIONS.get(sid) || null;
+  const session = SESSIONS.get(sid) || null;
+  if (session && session.email) {
+    db.updateLastActive(session.email);
+  }
+  return session;
 };
 
 // Helper for auth validation
@@ -249,6 +253,26 @@ app.get('/api/admin/settings', (req, res) => {
 app.post('/api/admin/settings', validateAdminAuth, (req, res) => {
   const settings = db.updateAdminSettings(req.body);
   res.json(settings);
+});
+
+// Admin list registered users
+app.get('/api/admin/users', validateAdminAuth, (req, res) => {
+  const activeEmails = new Set(Array.from(SESSIONS.values()).map(s => s.email.toLowerCase()));
+  const profiles = (db.getProfiles() as any[]).map((profile: any) => {
+    const emailLower = profile.email.toLowerCase();
+    const isSessionActive = activeEmails.has(emailLower);
+    let isRecent = false;
+    if (profile.last_active_at) {
+      const lastActive = new Date(profile.last_active_at).getTime();
+      const diffMs = Date.now() - lastActive;
+      isRecent = diffMs < 120000; // 2 minutes
+    }
+    return {
+      ...profile,
+      is_online: isSessionActive || isRecent
+    };
+  });
+  res.json(profiles);
 });
 
 // Orders

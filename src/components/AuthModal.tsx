@@ -41,7 +41,22 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialTab = 'si
             }
           }
         });
-        if (signUpErr) throw signUpErr;
+        if (signUpErr) {
+          // Fallback to sign in automatically if email is already registered
+          if (signUpErr.message && signUpErr.message.toLowerCase().includes('already exists')) {
+            const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+              email: email.trim(),
+              password: password.trim()
+            });
+            if (signInErr) {
+              throw signUpErr;
+            }
+            onSuccess(signInData.session);
+            onClose();
+            return;
+          }
+          throw signUpErr;
+        }
         onSuccess(data.session);
         onClose();
       } else {
@@ -79,7 +94,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialTab = 'si
               <Sparkles className="w-4.5 h-4.5 text-primary animate-pulse" />
             </h2>
             <p className="text-xs text-gray-400 font-mono mt-1">
-              {tab === 'signin' ? 'Verify distributed ledger credentials' : 'Deploy new customer ledger node'}
+              {tab === 'signin' ? 'Log in with your email and password' : 'Create a secure shopper account'}
             </p>
           </div>
           <button 
@@ -100,7 +115,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialTab = 'si
             }`}
             id="tab-signin-trigger"
           >
-            Sign In
+            Log In
           </button>
           <button
             onClick={() => { setTab('signup'); setError(''); }}
@@ -109,7 +124,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialTab = 'si
             }`}
             id="tab-signup-trigger"
           >
-            Register Node
+            Create Account
           </button>
         </div>
 
@@ -145,7 +160,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialTab = 'si
 
           <div>
             <label className="block text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1.5">
-              Secure Ledger Key
+              Account Password
             </label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
@@ -181,18 +196,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialTab = 'si
             {loading ? (
               <>
                 <RefreshCw className="w-4.5 h-4.5 animate-spin" />
-                Encrypting Node Link...
+                Securing connection...
               </>
             ) : (
-              tab === 'signin' ? 'Unlock Account' : 'Initialize Account'
+              tab === 'signin' ? 'Access Account' : 'Create Account'
             )}
           </button>
         </form>
-
-        {/* Hint text */}
-        <div className="text-center mt-6 text-[10px] font-mono text-gray-600 border-t border-white/5 pt-4 relative z-10">
-          Main Seed Admin: <span className="text-gray-400">musajohnjonathan@gmail.com</span> • Pass: <span className="text-gray-400">adminJohn</span>
-        </div>
       </div>
     </div>
   );
